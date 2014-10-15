@@ -2,6 +2,7 @@
 #include <fstream>
 #include <set>
 #include <string>
+#include <iomanip>
 #include <cctype>
 using namespace std;
 
@@ -55,6 +56,7 @@ int main()
             {
                 infile.close();
                 outfile.close();
+                cout << "Total lines: " << line << endl;
                 return 0;
             }
         }
@@ -77,11 +79,11 @@ int main()
                 }
                 if (keywords.count(token) == 0)
                 {
-                    outfile << "< ID, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< ID," << token << " >" << endl;
                 }
                 else
                 {
-                    outfile << "< key, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< key," << token << " >" << endl;
                 }
                 token = "";
                 break;
@@ -153,7 +155,7 @@ num23:
                         }
                         else
                         {
-                            outfile << "< Error: exponent has no digits >" << endl;//error();
+                            outfile << setw(12) << left << "< Error:" << "exponent has no digits >" << endl;//error();
                             notEnd = false;
                         }
                         break;
@@ -182,7 +184,7 @@ num23:
                     }
                 }
 
-                outfile << "< num, " << token << " >" << endl; //DTB(token)
+                outfile << setw(12) << left << "< num," << token << " >" << endl; //DTB(token)
                 token = "";
                 notEnd = true;
                 state = 0;
@@ -192,24 +194,24 @@ num23:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< arith-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '+')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< arith-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                     }
                     else if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< assign-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "<arith-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "<arith-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -219,30 +221,30 @@ num23:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< arith-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '-')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< arith-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                     }
                     else if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< assign-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                     else if (*forward == '>')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< ptr-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< ptr-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< arith-op, " << token << " > " << endl;
+                        outfile << setw(12) << left << "< arith-op," << token << " > " << endl;
                     }
                 }
                 token = "";
@@ -252,18 +254,18 @@ num23:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< arith-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< assign-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< arith-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -273,14 +275,14 @@ num23:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< arith-op, " << token << " >" << endl;    // 行末除号
+                    outfile << setw(12) << left << "< arith-op," << token << " >" << endl;    // 行末除号
                 else
                 {
                     if (*forward == '=')    // 除法赋值
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< assign-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                     else if (*forward == '/')    // 单行注释，读到行末
                     {
@@ -291,7 +293,7 @@ num23:
                             token.append(1, *forward);
                             ++forward;
                         }
-                        outfile << "< comments, - >" << endl;
+                        outfile << setw(12) << left << "< comments," << "- >" << endl;
                     }
                     else if (*forward == '*')      // 多行注释可以换行
                     {
@@ -315,6 +317,7 @@ loop:
                             {
                                 infile.close();
                                 outfile.close();
+                                cout << "Total line: " << line << endl;
                                 return 0;
                             }
                         }
@@ -330,7 +333,7 @@ loop:
                             {
                                 token.append(1, *forward);
                                 ++forward;
-                                outfile << "< comments, - >" << endl;
+                                outfile << setw(12) << left << "< comments," << "- >" << endl;
 
                             }
                             else    // 星号后是其他字符，仍继续读取注释
@@ -341,7 +344,7 @@ loop:
                     }
                     else    // 除号后是其他字符，为单个除号
                     {
-                        outfile << "< arith-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -351,18 +354,18 @@ loop:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< arith-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< assign-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< arith-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< arith-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -372,24 +375,24 @@ loop:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< bit-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< bit-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< assign-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                     else if (*forward == '&')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< log-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< log-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< bit-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< bit-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -399,24 +402,24 @@ loop:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< bit-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< bit-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< assign-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                     else if (*forward == '|')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< log-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< log-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< bit-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< bit-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -426,18 +429,18 @@ loop:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< bit-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< bit-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< assign-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< bit-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< bit-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -447,7 +450,7 @@ loop:
                 token.append(1, C);
                 ++forward;
 
-                outfile << "< bit-op, " << token << " >" << endl;
+                outfile << setw(12) << left << "< bit-op," << token << " >" << endl;
                 token = "";
                 break;
 
@@ -455,18 +458,18 @@ loop:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< rel-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< rel-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< rel-op, LE >" << endl;
+                        outfile << setw(12) << left << "< rel-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< rel-op, LT >" << endl;
+                        outfile << setw(12) << left << "< rel-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -476,18 +479,18 @@ loop:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< assign-op, - >" << endl;
+                    outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< rel-op, EQ >" << endl;
+                        outfile << setw(12) << left << "< rel-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< assign-op, - >" << endl;
+                        outfile << setw(12) << left << "< asgn-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -497,18 +500,18 @@ loop:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< rel-op, GT > " << endl;
+                    outfile << setw(12) << left << "< rel-op," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< rel-op, GE >" << endl;
+                        outfile << setw(12) << left << "< rel-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< rel-op, GT >" << endl;
+                        outfile << setw(12) << left << "< rel-op," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -518,18 +521,18 @@ loop:
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< other-op, " << token << " >" << endl;
+                    outfile << setw(12) << left << "< punct," << token << " >" << endl;
                 else
                 {
                     if (*forward == '=')
                     {
                         token.append(1, *forward);
                         ++forward;
-                        outfile << "< rel-op, NE >" << endl;
+                        outfile << setw(12) << left << "< rel-op," << token << " >" << endl;
                     }
                     else
                     {
-                        outfile << "< other-op, " << token << " >" << endl;
+                        outfile << setw(12) << left << "< punct," << token << " >" << endl;
                     }
                 }
                 token = "";
@@ -538,7 +541,7 @@ loop:
             case '\"':
                 token.append(1, C);
                 ++forward;
-again:
+again1:
                 while ((forward != buffer.end()) && (*forward != '\"'))
                 {
                     token.append(1, *forward);
@@ -546,7 +549,7 @@ again:
                 }
                 if (forward == buffer.end())
                 {
-                    outfile << "< Error: missing terminating \" character >" << endl; //error();
+                    outfile << setw(12) << left << "< Error:" << "missing terminating \" character >" << endl; //error();
                     token = "";
                     break;
                 }
@@ -554,14 +557,54 @@ again:
                 {
                     token.append(1, *forward);
                     ++forward;
-                    goto again;
+                    goto again1;
                 }
                 else
                 {
                     token.append(1, *forward);
                     ++forward;
                 }
-                outfile << "< string, - >" << endl;
+                outfile << setw(12) << left << "< string," << "- >" << endl;
+                token = "";
+                break;
+
+            case '\'':
+                token.append(1, C);
+                ++forward;
+
+                while ((forward != buffer.end()) && (*forward != '\''))
+                {
+                    token.append(1, *forward);
+                    ++forward;
+                }
+                if (forward == buffer.end())
+                {
+                    outfile << setw(12) << left << "< Error:" << "missing terminating \' character >" << endl; //error();
+                    token = "";
+                    break;
+                }
+                else if (*(forward - 1) == '\\')
+                {
+                    token.append(1, *forward);
+                    ++forward;
+                    if (forward != buffer.end())
+                    {
+                        token.append(1, *forward);
+                        ++forward;
+                    }
+                    else
+                    {
+                        outfile << setw(12) << left << "< Error:" << "missing terminating \' character >" << endl; //error();
+                        token = "";
+                        break;
+                    }
+                }
+                else
+                {
+                    token.append(1, *forward);
+                    ++forward;
+                }
+                outfile << setw(12) << left << "< char," << "- >" << endl;
                 token = "";
                 break;
 
@@ -575,14 +618,14 @@ again:
                     state = 23;
                     goto num23;
                 }
-                outfile << "< other-op, " << token << " >" << endl;
+                outfile << setw(12) << left << "< punct," << token << " >" << endl;
                 token = "";
                 break;
 
-            case '#': case '{': case '}': case '[': case ']': case '(': case ')': case '?': case ',': case ';': case '\'': case '\\':
+            case '#': case '{': case '}': case '[': case ']': case '(': case ')': case '?': case ':': case ',': case ';': case '\\':
                 token.append(1, C);
                 ++forward;
-                outfile << "< other-op, " << token << " >" << endl;
+                outfile << setw(12) << left << "< punct," << token << " >" << endl;
                 token = "";
                 break;
 
