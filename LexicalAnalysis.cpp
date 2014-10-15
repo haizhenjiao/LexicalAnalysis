@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <set>
 #include <string>
 #include <cctype>
@@ -14,14 +13,14 @@ int main()
     string ifile, ofile;
     string buffer, token;
     string::iterator forward = buffer.end();
-    stringstream ss;
-    int num = 0;
+    int state = 0;
     int line = 0, column = 0;
     char C;
+    bool notEnd = true;
 
     cout << "Please input the source file name (press Enter to use 'in.c') :" << endl;
     getline(cin, ifile);
-    if(ifile == "")
+    if (ifile == "")
         ifile = "in.c";    // 回车默认
 
     ifstream infile(ifile.c_str());
@@ -32,7 +31,7 @@ int main()
     }
     cout << "Please input the target file name (press Enter to use 'out.txt') :" << endl;
     getline(cin, ofile);
-    if(ofile == "")
+    if (ofile == "")
         ofile = "out.txt";    // 回车默认
 
     ofstream outfile(ofile.c_str());
@@ -54,7 +53,9 @@ int main()
             }
             else
             {
-                break;
+                infile.close();
+                outfile.close();
+                return 0;
             }
         }
         while ((forward != buffer.end()) && isspace(*forward))      // 未读到缓冲区结束，则一直读到非空字符
@@ -87,16 +88,104 @@ int main()
 
             case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
                 token.append(1, C);
+                state = 1;    // num1
+
                 ++forward;
-                while ((forward != buffer.end()) && isdigit(*forward))
+num23:
+                while ((forward != buffer.end()) && notEnd)
                 {
-                    token.append(1, *forward);
-                    ++forward;
+                    switch (state)
+                    {
+                    case 1:
+                        if (*forward == '.')
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 23;
+                        }
+                        else if (*forward == 'E' || *forward == 'e')
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 4;
+                        }
+                        else if (isdigit(*forward))
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 1;
+                        }
+                        else
+                        {
+                            notEnd = false;    // 识别结束
+                        }
+                        break;
+                    case 23:
+                        if (*forward == 'E' || *forward == 'e')
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 4;
+                        }
+                        else if (isdigit(*forward))
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 23;
+                        }
+                        else
+                        {
+                            notEnd = false;
+                        }
+                        break;
+                    case 4:
+                        if (*forward == '+' || *forward == '-')
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 6;
+                        }
+                        else if (isdigit(*forward))
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 5;
+                        }
+                        else
+                        {
+                            outfile << "< Error: exponent has no digits >" << endl;//error();
+                            notEnd = false;
+                        }
+                        break;
+                    case 5:
+                        if (isdigit(*forward))
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 5;
+                        }
+                        else
+                        {
+                            notEnd = false;
+                        }
+                        break;
+                    case 6:
+                        if (isdigit(*forward))
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            state = 5;
+                        }
+                        break;
+                    default:
+                        break;
+                    }
                 }
-                ss << token;
-                ss >> num;
-                outfile << "< num, " << num << " >" << endl;//DTB()
+
+                outfile << "< num, " << token << " >" << endl; //DTB(token)
                 token = "";
+                notEnd = true;
+                state = 0;
                 break;
 
             case '+':
@@ -184,40 +273,77 @@ int main()
                 token.append(1, C);
                 ++forward;
                 if (forward == buffer.end())
-                    outfile << "< arith-op, " << token << " >" << endl;
+                    outfile << "< arith-op, " << token << " >" << endl;    // 行末除号
                 else
                 {
-                    if (*forward == '=')
+                    if (*forward == '=')    // 除法赋值
                     {
                         token.append(1, *forward);
                         ++forward;
                         outfile << "< assign-op, " << token << " >" << endl;
                     }
-                    else if (*forward == '/')
+                    else if (*forward == '/')    // 单行注释，读到行末
                     {
                         token.append(1, *forward);
-                        forward = buffer.end();
-                    }
-                    else if (*forward == '*')      ////////////// 注释可以换行
-                    {
-                        token.append(1, *forward);
-loop:
-                        while (*forward != '*')
-                            ++forward;
                         ++forward;
-                        if (*forward == '/')
+                        while (forward != buffer.end())
                         {
+                            token.append(1, *forward);
                             ++forward;
-                            goto end;
                         }
-                        goto loop;
+                        outfile << "< comments, - >" << endl;
                     }
-                    else
+                    else if (*forward == '*')      // 多行注释可以换行
+                    {
+                        token.append(1, *forward);
+                        ++forward;
+loop:
+                        while ((forward != buffer.end()) && (*forward != '*'))
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                        }
+                        if (forward == buffer.end())    // 一行注释结束，继续下一行
+                        {
+                            if (getline(infile, buffer, '\n'))      // 读到错误或EOF则返回false
+                            {
+                                ++line;
+                                forward = buffer.begin();
+                                goto loop;
+                            }
+                            else
+                            {
+                                infile.close();
+                                outfile.close();
+                                return 0;
+                            }
+                        }
+                        else    // 读到注释结束符的星号
+                        {
+                            token.append(1, *forward);
+                            ++forward;
+                            if (forward == buffer.end())   // 若 */ 被换行分开，则重新读取
+                            {
+                                goto loop;
+                            }
+                            else if (*forward == '/')   // 注释结束符ok
+                            {
+                                token.append(1, *forward);
+                                ++forward;
+                                outfile << "< comments, - >" << endl;
+
+                            }
+                            else    // 星号后是其他字符，仍继续读取注释
+                            {
+                                goto loop;
+                            }
+                        }
+                    }
+                    else    // 除号后是其他字符，为单个除号
                     {
                         outfile << "< arith-op, " << token << " >" << endl;
                     }
                 }
-end:
                 token = "";
                 break;
 
@@ -238,7 +364,8 @@ end:
                     {
                         outfile << "< arith-op, " << token << " >" << endl;
                     }
-                }           token = "";
+                }
+                token = "";
                 break;
 
             case '&':
@@ -264,7 +391,8 @@ end:
                     {
                         outfile << "< bit-op, " << token << " >" << endl;
                     }
-                }           token = "";
+                }
+                token = "";
                 break;
 
             case '|':
@@ -290,7 +418,8 @@ end:
                     {
                         outfile << "< bit-op, " << token << " >" << endl;
                     }
-                }           token = "";
+                }
+                token = "";
                 break;
 
             case '^':
@@ -310,7 +439,8 @@ end:
                     {
                         outfile << "< bit-op, " << token << " >" << endl;
                     }
-                }           token = "";
+                }
+                token = "";
                 break;
 
             case '~':
@@ -338,7 +468,8 @@ end:
                     {
                         outfile << "< rel-op, LT >" << endl;
                     }
-                }           token = "";
+                }
+                token = "";
                 break;
 
             case '=':
@@ -358,7 +489,8 @@ end:
                     {
                         outfile << "< assign-op, - >" << endl;
                     }
-                }           token = "";
+                }
+                token = "";
                 break;
 
             case '>':
@@ -378,7 +510,8 @@ end:
                     {
                         outfile << "< rel-op, GT >" << endl;
                     }
-                }           token = "";
+                }
+                token = "";
                 break;
 
             case '!':
@@ -398,13 +531,14 @@ end:
                     {
                         outfile << "< other-op, " << token << " >" << endl;
                     }
-                }           token = "";
+                }
+                token = "";
                 break;
 
             case '\"':
                 token.append(1, C);
                 ++forward;
-
+again:
                 while ((forward != buffer.end()) && (*forward != '\"'))
                 {
                     token.append(1, *forward);
@@ -412,16 +546,40 @@ end:
                 }
                 if (forward == buffer.end())
                 {
-                    outfile << "< Error: excepted '\"' >" << endl; //error();
+                    outfile << "< Error: missing terminating \" character >" << endl; //error();
                     token = "";
                     break;
                 }
-                ++forward;
+                else if (*(forward - 1) == '\\')
+                {
+                    token.append(1, *forward);
+                    ++forward;
+                    goto again;
+                }
+                else
+                {
+                    token.append(1, *forward);
+                    ++forward;
+                }
                 outfile << "< string, - >" << endl;
                 token = "";
                 break;
 
-            case '#': case '{': case '}': case '[': case ']': case '(': case ')': case '.': case '?': case ',': case ';': case '\'': case '\\':
+            case '.':
+                token.append(1, C);
+                ++forward;
+                if ((forward != buffer.end()) && isdigit(*forward))
+                {
+                    token.append(1, *forward);
+                    ++forward;
+                    state = 23;
+                    goto num23;
+                }
+                outfile << "< other-op, " << token << " >" << endl;
+                token = "";
+                break;
+
+            case '#': case '{': case '}': case '[': case ']': case '(': case ')': case '?': case ',': case ';': case '\'': case '\\':
                 token.append(1, C);
                 ++forward;
                 outfile << "< other-op, " << token << " >" << endl;
@@ -434,9 +592,6 @@ end:
             }    // end of switch
         }    // end of if
     }    // end of while
-
-    infile.close();
-    outfile.close();
 
     return 0;
 }
